@@ -23,7 +23,7 @@ colorscheme molokai
 "colorscheme phd
 
 set cursorline
-set cursorcolumn
+"set cursorcolumn
 set hlsearch
 set number
 
@@ -34,16 +34,17 @@ filetype indent on
 set tabstop=4
 set shiftwidth=4
 set softtabstop=4
-set nowrap
+"set nowrap
 set backspace=2
 
 set tags=./tags;,tags
 set tags+=~/.vim/systags
 
 let g:tagbar_ctags_bin='/usr/bin/ctags'
-let g:tagbar_width=50
+"let g:tagbar_width=50
 "let g:tagbar_left=1
 "let g:tagbar_autofocus=1
+let g:tagbar_iconchars=['+', '-']
 map <F8> :TagbarToggle<CR>
 
 let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
