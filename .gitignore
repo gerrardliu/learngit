@@ -2,3 +2,5 @@
 Gopkg.lock
 tags
 a.out
+bin
+*.swp
