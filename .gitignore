@@ -1,4 +1,11 @@
 .DS_Store
+target
+.iml
+.settings
+.metadata
+.classpath
+.project
+Servers
 .idea
 Gopkg.lock
 tags
