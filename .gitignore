@@ -1,6 +1,6 @@
 .DS_Store
 target
-.iml
+*.iml
 .settings
 .metadata
 .classpath
