@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="duke"
+          class="com.springinaction.springidol.PoeticJuggler">
+        <constructor-arg value="15"/>
+        <constructor-arg ref="sonnet29"/>
+    </bean>
+
+    <bean id="sonnet29" class="com.springinaction.springidol.Sonnet29"/>
+
+    <bean id="kenny"
+          class="com.springinaction.springidol.Instrumentalist">
+        <property name="song" value="Jingle Bells"/>
+        <property name="instrument">
+            <bean class="com.springinaction.springidol.Saxophone"/>
+        </property>
+    </bean>
+
+    <bean id="benny"
+          class="com.springinaction.springidol.Instrumentalist"
+          p:song="Jingle bells"
+          p:instrument-ref="piano"/>
+
+    <bean id="piano" class="com.springinaction.springidol.Piano"/>
+    <bean id="saxophone" class="com.springinaction.springidol.Saxophone"/>
+
+    <bean id="hank"
+          class="com.springinaction.springidol.OneManBand">
+        <property name="instruments">
+            <list>
+                <ref bean="piano"/>
+                <ref bean="saxophone"/>
+            </list>
+        </property>
+    </bean>
+
+</beans>
