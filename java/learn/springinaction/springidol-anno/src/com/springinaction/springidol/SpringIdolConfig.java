@@ -1,13 +1,15 @@
 package com.springinaction.springidol;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @Configuration
+@EnableAspectJAutoProxy
+@ComponentScan
 public class SpringIdolConfig {
 
     @Bean
@@ -55,5 +57,14 @@ public class SpringIdolConfig {
     public Instrument piano() {
         return new Piano();
     }
+
+    @Bean
+    public Audience audience()  { return new Audience(); }
+
+    @Bean
+    public Magician magician() { return new Magician(); }
+
+    @Bean
+    public Volunteer volunteer() { return new Volunteer(); }
 }
 
