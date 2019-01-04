@@ -19,5 +19,10 @@ public class SpringIdol {
             System.out.println(entry.getKey() + " begin:");
             entry.getValue().perform();
         }
+
+        Thinker volunteer = (Thinker) ctx.getBean("volunteer");
+        volunteer.thinkOfSomething("hi money");
+        Magician magician = (Magician) ctx.getBean("magician");
+        System.out.println("You are thinking:" + magician.getThoughts());
     }
 }
