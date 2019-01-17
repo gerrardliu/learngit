@@ -9,7 +9,7 @@
         <setting name="mapUnderscoreToCamelCase" value="true"/>
         <setting name="aggressiveLazyLoading" value="false"/>
     </settings>
-    <environments default="development">
+    <!--<environments default="development">
         <environment id="development">
             <transactionManager type="JDBC"></transactionManager>
             <dataSource type="UNPOOLED">
@@ -23,5 +23,5 @@
     </environments>
     <mappers>
         <mapper resource="tk/mybatis/web/mapper/DictMapper.xml"/>
-    </mappers>
+    </mappers>-->
 </configuration>
