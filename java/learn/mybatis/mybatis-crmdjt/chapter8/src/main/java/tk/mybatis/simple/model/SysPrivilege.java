@@ -1,6 +1,8 @@
 package tk.mybatis.simple.model;
 
-public class SysPrivilege {
+import java.io.Serializable;
+
+public class SysPrivilege implements Serializable {
     private Long id;
     private String privilegeName;
     private String privilegeUrl;
