@@ -25,4 +25,11 @@ public class SchoolService {
         }
         return list;
     }
+
+    public School findById(Integer id) {
+        School school = new School();
+        school.setName("北京大学");
+        school.setScale(9999);
+        return school;
+    }
 }
