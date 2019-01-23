@@ -16,4 +16,11 @@ public class RestResult {
         r.setData(data);
         return r;
     }
+
+    public static RestResult fail(Integer code, String message) {
+        RestResult r = new RestResult();
+        r.setCode(code);
+        r.setMessage(message);
+        return r;
+    }
 }
