@@ -17,6 +17,10 @@ public class SchoolService {
         return schoolMapper.selectAll();
     }
 
+    public List<School> findAllByPage(Integer start, Integer count) {
+        return schoolMapper.selectAllByPage(start, count);
+    }
+
     public School findById(Integer id) {
         return schoolMapper.selectById(id);
     }
