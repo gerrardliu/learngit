@@ -1,7 +1,6 @@
 package com.gerrardliu.test.school.controller;
 
 import com.gerrardliu.test.school.common.RestResult;
-import com.gerrardliu.test.school.model.School;
 import com.gerrardliu.test.school.service.SchoolService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;
