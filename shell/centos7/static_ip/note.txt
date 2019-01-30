@@ -1,0 +1,8 @@
+in outer windows host:
+1) use vmnet1
+2) share internet with vmnet1
+3) check vmnet1 bind 192.168.137.1
+
+in outer macos host:
+1) change network config in:
+/Library/Preferences/VMware\ Fusion
