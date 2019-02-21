@@ -1,5 +1,6 @@
 package com.gerrardliu.test;
 
+import com.gerrardliu.test.input.TestInput;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,7 +14,7 @@ public class HelloWorld {
 
     public static void testCommonsIO() {
         String rawFileFullName = "abc/123.txt/";
-        String filefullName = FilenameUtils.normalizeNoEndSeparator(rawFileFullName,true);
+        String filefullName = FilenameUtils.normalizeNoEndSeparator(rawFileFullName, true);
         System.out.println(filefullName);
         try {
             FileUtils.writeStringToFile(new File(filefullName), "123", "UTF-8");
@@ -24,12 +25,15 @@ public class HelloWorld {
 
     public static void testCommonsLang3() {
         String rawString = "com.gerrardliu.test.hello";
-        System.out.println(StringUtils.replaceChars(rawString,'.','/'));
+        System.out.println(StringUtils.replaceChars(rawString, '.', '/'));
     }
 
     public static void main(String[] args) {
-        System.out.println(new HelloWorld().sayHello());
+        //System.out.println(new HelloWorld().sayHello());
         //testCommonsIO();
-        testCommonsLang3();
+        //testCommonsLang3();
+        //TestReflect.test(args);
+        //TestTypes.test(args);
+        TestInput.test(args);
     }
 }
