@@ -1,6 +1,6 @@
 package com.gerrardliu.test;
 
-import com.gerrardliu.test.input.TestInput;
+import com.gerrardliu.test.array.TestArray;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +34,7 @@ public class HelloWorld {
         //testCommonsLang3();
         //TestReflect.test(args);
         //TestTypes.test(args);
-        TestInput.test(args);
+        //TestInput.test(args);
+        TestArray.test(args);
     }
 }
