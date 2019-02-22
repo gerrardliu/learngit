@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>开始使用layui</title>
+  <link rel="stylesheet" href="/layui/css/layui.css">
+</head>
+<body>
+ 
+<!-- 你的HTML代码 -->
+<table class="layui-table" lay-data="{ width:340, height:315, url:'/school/list', page:false, id:'test'}" lay-filter="test">
+  <thead>
+    <tr>
+      <th lay-data="{field:'id', width:80, sort: true}">ID</th>
+      <th lay-data="{field:'name', width:180}">学校名称</th>
+      <th lay-data="{field:'scale', width:80, sort: true}">规模</th>
+    </tr>
+  </thead>
+</table>
+
+<script src="/layui/layui.js"></script>
+<script>
+//一般直接写在一个js文件中
+layui.use(['table'], function(){
+  var table = layui.table;
+});
+</script> 
+</body>
+</html>
