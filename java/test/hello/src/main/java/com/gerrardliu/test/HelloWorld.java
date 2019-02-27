@@ -1,6 +1,6 @@
 package com.gerrardliu.test;
 
-import com.gerrardliu.test.array.TestArray;
+import com.gerrardliu.test.lambda.TestLambda;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -35,6 +35,7 @@ public class HelloWorld {
         //TestReflect.test(args);
         //TestTypes.test(args);
         //TestInput.test(args);
-        TestArray.test(args);
+        //TestArray.test(args);
+        TestLambda.test(args);
     }
 }
