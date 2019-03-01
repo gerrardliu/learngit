@@ -33,13 +33,21 @@ cd librdkafka-0.9.1
 rm -v /usr/local/lib/librdkafka*.so /usr/local/lib/librdkafka*.so.*
 
 # libevent-2.0.22-stable
+#mkdir -p /root/source && cd /root/source
+#wget https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
+#tar zxvf libevent-2.0.22-stable.tar.gz
+#cd libevent-2.0.22-stable
+#./configure
+#make -j $CPUS
+#make install
+
+#libevent master work in ubuntu18.04
 mkdir -p /root/source && cd /root/source
-wget https://github.com/libevent/libevent/releases/download/release-2.0.22-stable/libevent-2.0.22-stable.tar.gz
-tar zxvf libevent-2.0.22-stable.tar.gz
-cd libevent-2.0.22-stable
-./configure
-make -j $CPUS
-make install
+git clone https://github.com/libevent/libevent.git
+cd libevent
+./autogen.sh
+./configure --disable-shared
+make && make install
 
 #bitcoin
 mkdir -p /work
