@@ -1,4 +1,4 @@
-#use ubuntu16.04
+#use ubuntu16.04 or ubuntu 18.04
 
 CPUS=`lscpu | grep '^CPU(s):' | awk '{print $2}'`
 
