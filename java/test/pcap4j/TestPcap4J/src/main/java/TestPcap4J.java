@@ -33,6 +33,7 @@ public class TestPcap4J {
             e.printStackTrace();
             return;
         }
+        //nif = Pcaps.getDevByName("enx000ec6ac5bec");
         if (nif == null) {
             return;
         }
@@ -89,6 +90,10 @@ public class TestPcap4J {
                 }
 
                 System.out.println("counter=" + counter);
+                System.out.println("srcAddr=" + srcAddr);
+                System.out.println("dstAddr=" + dstAddr);
+                System.out.println("srcPort=" + srcPort);
+                System.out.println("dstPort=" + dstPort);
                 System.out.println(jsonPacket);
             }
         };
