@@ -33,6 +33,7 @@ public class TestPcap4J {
             e.printStackTrace();
             return;
         }
+        //nif = Pcaps.getDevByName("enx000ec6ac5bec");
         if (nif == null) {
             return;
         }
@@ -81,13 +82,18 @@ public class TestPcap4J {
                     //System.out.println("tcpPayLoad is null");
                     return;
                 }
-                if (tcpPayLoad[0] != '{') {
+                String jsonPacket = new String(tcpPayLoad).trim();
+                //if (tcpPayLoad[0] != '{' || tcpPayLoad[tcpPayLoad.length-1] != '}') {
+                if (jsonPacket.charAt(0) != '{' || jsonPacket.charAt(jsonPacket.length()-1) != '}') {
                     //System.out.println("tcpPayLoad is not json");
                     return;
                 }
 
                 System.out.println("counter=" + counter);
-                String jsonPacket = new String(tcpPayLoad);
+                System.out.println("srcAddr=" + srcAddr);
+                System.out.println("dstAddr=" + dstAddr);
+                System.out.println("srcPort=" + srcPort);
+                System.out.println("dstPort=" + dstPort);
                 System.out.println(jsonPacket);
             }
         };
