@@ -159,10 +159,10 @@ public class Main {
 
         Map<Long, PacketData> packetMap = new TreeMap<>();
 
-        File dir = new File("/tmp/miner");
+        File dir = new File("data/");
         List<File> files = (List<File>) FileUtils.listFiles(dir, null, false);
         for (File file : files) {
-            if (!file.getName().startsWith("miner.out")) {
+            if (!file.isFile() || !file.getName().startsWith("miner.out")) {
                 System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
                 continue;
             }
@@ -191,7 +191,7 @@ public class Main {
         }
 
         System.out.println("startSeq = " + startSeq);
-        File file = new File(String.format("/tmp/parse_%s_%d_to_%s_%d.res", minerIp, minerPort, poolIp, poolPort));
+        File file = new File(String.format("data/parse_%s_%d_to_%s_%d.res", minerIp, minerPort, poolIp, poolPort));
         if (file.exists()) {
             file.delete();
         }
@@ -213,7 +213,7 @@ public class Main {
 
         //File file = new File("/tmp/miner/miner.out.20191025125759");
         //Long startSeq = 2957490728L;
-        File file = new File("/tmp/miner/miner.out.20191025112659");
+        File file = new File("data/miner.out.20191025112659");
         Long startSeq = 2957344686L;
         //Long startSeq = 2264188133L;
 

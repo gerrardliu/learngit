@@ -6,7 +6,9 @@ import java.util.List;
 public class TestDNS {
     public static void main(String[] args) {
         System.out.println("hi");
-        String domain = "btc.hh.apxd3.antpool.com";
+//        String domain = "btc.hh.apxd3.antpool.com";
+//        String domain = "cn-ltc.ss.btc.com";
+        String domain = "cn.ss.btc.com";
 //        String domain = "47.94.129.4";
 //        String domain = "localhost";
         System.out.println("domain=" + domain);
