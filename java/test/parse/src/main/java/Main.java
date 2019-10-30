@@ -67,11 +67,16 @@ class PacketData {
 }
 
 public class Main {
+
+    private static long nextSeq(long seq) {
+        return seq % 0x100000000L;
+    }
+
     public static void main(String[] args) {
         //test1();
         //test2();
-        test3();
-        //test4();
+        //test3();
+        test4();
     }
 
     private static void test1() {
@@ -214,8 +219,8 @@ public class Main {
         //File file = new File("/tmp/miner/miner.out.20191025125759");
         //Long startSeq = 2957490728L;
         File file = new File("data/miner.out.20191025112659");
-        Long startSeq = 2957344686L;
-        //Long startSeq = 2264188133L;
+        //Long startSeq = 2957344686L;
+        Long startSeq = 2264188133L;
 
         List<String> strings = null;
         try {
@@ -272,23 +277,23 @@ public class Main {
         PacketData q = packetMap.get(p.ack);
         while (p != null && q != null) {
             //System.out.println(p.toLine());
-            res.add(p);
-            p = packetMap.get(p.seq + p.len);
+            res.add(p); //p.seq == 2264191123l
+            p = packetMap.get(nextSeq(p.seq + p.len));
             while (p != null && q != null && q.ack <= p.seq) {
                 //System.out.println(q.toLine());
                 res.add(q);
-                q = packetMap.get(q.seq + q.len);
+                q = packetMap.get(nextSeq(q.seq + q.len));
             }
         }
         while (p != null) {
             //System.out.println(p.toLine());
             res.add(p);
-            p = packetMap.get(p.seq + p.len);
+            p = packetMap.get(nextSeq(p.seq + p.len));
         }
         while (q != null) {
             //System.out.println(q.toLine());
             res.add(q);
-            q = packetMap.get(q.seq + q.len);
+            q = packetMap.get(nextSeq(q.seq + q.len));
         }
     }
 
