@@ -94,11 +94,10 @@ class PacketData {
 class SocketData {
     public String socketId;
     public String rSocketId;
-    public long startSeq;
+    public PacketData startPacket;
     Map<Long, PacketData> packetMap;
 
     public SocketData() {
-        startSeq = Long.MAX_VALUE;
         packetMap = new HashMap<>();
     }
 
@@ -109,7 +108,7 @@ class SocketData {
         SocketData socket = new SocketData();
         socket.socketId = packet.getSocketId();
         socket.rSocketId = packet.getReverseSocketId();
-        socket.startSeq = packet.seq;
+        socket.startPacket = packet;
         socket.packetMap.put(packet.seq, packet);
         return socket;
     }
@@ -133,17 +132,20 @@ class SocketSessionData {
         session.socketSessionId = packet.getSocketSessionId();
         session.socket1 = SocketData.createSocketDataFromPacket(packet);
         session.socketMap.put(session.socket1.socketId, session.socket1);
-        session.socket2 = new SocketData();
-        session.socket2.socketId = session.socket1.rSocketId;
-        session.socket2.rSocketId = session.socket1.socketId;
-        session.socketMap.put(session.socket2.socketId, session.socket2);
         return session;
     }
 
     public PacketData getStart() {
-        PacketData p1 = socket1.packetMap.get(socket1.startSeq);
-        PacketData p2 = socket2.packetMap.get(socket2.startSeq);
-        if (p1 == null || p2 == null) {
+
+        PacketData p1 = socket1.startPacket;
+        if (p1 == null) {
+            return null;
+        }
+        if (socket2 == null) {
+            return p1;
+        }
+        PacketData p2 = socket2.startPacket;
+        if (p2 == null) {
             return p1;
         }
 
@@ -169,27 +171,37 @@ class SocketSessionData {
             System.out.println(String.format("%s, startSeq data missing", socketSessionId));
             return res;
         }
+        PacketData q = null;
 
-        PacketData q = socketMap.get(p.getReverseSocketId()).packetMap.get(p.ack);
+        SocketData socket = socketMap.get(p.getSocketId());
+        if (socket == null) {
+            System.out.println(String.format("%s, socket missing", socketSessionId));
+            return res;
+        }
+        SocketData rSocket = socketMap.get(p.getReverseSocketId());
+        if (rSocket != null) {
+            q = rSocket.packetMap.get(p.ack);
+        }
+
         while (p != null && q != null) {
             //System.out.println(p.toLine());
-            res.add(p); //p.seq == 2264191123l
-            p = socketMap.get(p.getSocketId()).packetMap.get(nextSeq(p.seq + p.len));
+            res.add(p);
+            p = socket.packetMap.get(nextSeq(p.seq + p.len));
             while (p != null && q != null && q.ack <= p.seq) {
                 //System.out.println(q.toLine());
                 res.add(q);
-                q = socketMap.get(q.getSocketId()).packetMap.get(nextSeq(q.seq + q.len));
+                q = rSocket.packetMap.get(nextSeq(q.seq + q.len));
             }
         }
         while (p != null) {
             //System.out.println(p.toLine());
             res.add(p);
-            p = socketMap.get(p.getSocketId()).packetMap.get(nextSeq(p.seq + p.len));
+            p = socket.packetMap.get(nextSeq(p.seq + p.len));
         }
         while (q != null) {
             //System.out.println(q.toLine());
             res.add(q);
-            q = socketMap.get(q.getSocketId()).packetMap.get(nextSeq(q.seq + q.len));
+            q = rSocket.packetMap.get(nextSeq(q.seq + q.len));
         }
 
         return res;
@@ -419,8 +431,8 @@ public class Main {
                     String socketId = p.getSocketId();
                     SocketSessionData session = sessionMap.get(sessionId);
                     if (!session.socketMap.containsKey(socketId)) {
-                        System.out.println(String.format("socketId=%s, not exist", socketId));
-                        return;
+                        session.socket2 = SocketData.createSocketDataFromPacket(p);
+                        session.socketMap.put(session.socket2.socketId, session.socket2);
                     } else {
                         SocketData socket = session.socketMap.get(socketId);
                         if (socket.packetMap.containsKey(p.seq)) {
@@ -429,10 +441,10 @@ public class Main {
                         socket.packetMap.put(p.seq, p);
 
                         //update startSeq
-                        if (p.seq < socket.startSeq) { //req may recycle to 0
-                            long diff = socket.startSeq - p.seq;
-                            if (diff < 0x80000000L || socket.startSeq == Long.MAX_VALUE) {
-                                socket.startSeq = p.seq;
+                        if (p.seq < socket.startPacket.seq) { //seq may recycle to 0
+                            long diff = socket.startPacket.seq - p.seq;
+                            if (diff < 0x80000000L) {
+                                socket.startPacket = p;
                             }
                         }
                     }
@@ -450,7 +462,7 @@ public class Main {
 
             for (String socketId : session.socketMap.keySet()) {
                 SocketData socket = session.socketMap.get(socketId);
-                System.out.println(String.format("\tsocket(%s), total %d frames, startSeq=%d", socketId, socket.packetMap.size(), socket.startSeq));
+                System.out.println(String.format("\tsocket(%s), total %d frames, startSeq=%d", socketId, socket.packetMap.size(), socket.startPacket.seq));
             }
 
             String outputFileName = String.format("%s/parse_%s.res", outputDir, sessionId);
