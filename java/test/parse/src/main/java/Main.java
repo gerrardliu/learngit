@@ -1,13 +1,18 @@
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 class PacketData {
 
     public String line;
+
+    public String socketId;
+    public String rSocketId;
 
     public long timestamp;
     public long counter;
@@ -49,7 +54,7 @@ class PacketData {
         StringBuilder sb = new StringBuilder(2048);
         sb.append(counter).append("\t");
         sb.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(timestamp))).append("\t");
-        sb.append("[").append(getSocketPairDisplay()).append("]\t");
+        sb.append("[").append(getSocketId()).append("]\t");
         sb.append(seq).append("\t");
         sb.append(ack).append("\t");
         sb.append(len).append("\t");
@@ -59,24 +64,146 @@ class PacketData {
         return sb.toString();
     }
 
-    public String getSocketPairDisplay() {
-        StringBuilder sb = new StringBuilder(64);
-        sb.append(srcIp).append(":").append(srcPort).append(" => ").append(dstIp).append(":").append(dstPort);
-        return sb.toString();
+    public String getSocketId() {
+        if (socketId == null) {
+            StringBuilder sb = new StringBuilder(64);
+            sb.append(srcIp).append("_").append(srcPort).append("_").append(dstIp).append("_").append(dstPort);
+            socketId = sb.toString();
+        }
+        return socketId;
+    }
+
+    public String getReverseSocketId() {
+        if (rSocketId == null) {
+            StringBuilder sb = new StringBuilder(64);
+            sb.append(dstIp).append("_").append(dstPort).append("_").append(srcIp).append("_").append(srcPort);
+            rSocketId = sb.toString();
+        }
+        return rSocketId;
+    }
+
+    public String getSocketSessionId() {
+        List<String> hosts = new ArrayList<>();
+        hosts.add(new StringBuilder(64).append(srcIp).append("_").append(srcPort).toString());
+        hosts.add(new StringBuilder(64).append(dstIp).append("_").append(dstPort).toString());
+        hosts.sort((o1, o2) -> o1.compareTo(o2));
+        return StringUtils.join(hosts, "_");
+    }
+}
+
+class SocketData {
+    public String socketId;
+    public String rSocketId;
+    public long startSeq;
+    Map<Long, PacketData> packetMap;
+
+    public SocketData() {
+        startSeq = Long.MAX_VALUE;
+        packetMap = new HashMap<>();
+    }
+
+    public static SocketData createSocketDataFromPacket(PacketData packet) {
+        if (packet == null) {
+            return null;
+        }
+        SocketData socket = new SocketData();
+        socket.socketId = packet.getSocketId();
+        socket.rSocketId = packet.getReverseSocketId();
+        socket.startSeq = packet.seq;
+        socket.packetMap.put(packet.seq, packet);
+        return socket;
+    }
+}
+
+class SocketSessionData {
+    public String socketSessionId;
+    public SocketData socket1;
+    public SocketData socket2;
+    public Map<String, SocketData> socketMap;
+
+    public SocketSessionData() {
+        socketMap = new HashMap<>();
+    }
+
+    public static SocketSessionData createSocketSessionFromPacket(PacketData packet) {
+        if (packet == null) {
+            return null;
+        }
+        SocketSessionData session = new SocketSessionData();
+        session.socketSessionId = packet.getSocketSessionId();
+        session.socket1 = SocketData.createSocketDataFromPacket(packet);
+        session.socketMap.put(session.socket1.socketId, session.socket1);
+        session.socket2 = new SocketData();
+        session.socket2.socketId = session.socket1.rSocketId;
+        session.socket2.rSocketId = session.socket1.socketId;
+        session.socketMap.put(session.socket2.socketId, session.socket2);
+        return session;
+    }
+
+    public PacketData getStart() {
+        PacketData p1 = socket1.packetMap.get(socket1.startSeq);
+        PacketData p2 = socket2.packetMap.get(socket2.startSeq);
+        if (p1 == null || p2 == null) {
+            return p1;
+        }
+
+        if (p1.ack == p2.seq) {
+            return p1;
+        } else if (p2.ack == p1.seq) {
+            return p2;
+        } else {
+            return null;
+        }
+
+    }
+
+    private long nextSeq(long seq) {
+        return seq % 0x100000000L;
+    }
+
+    public List<PacketData> getPacketStream() {
+        List<PacketData> res = new LinkedList<>();
+
+        PacketData p = getStart();
+        if (p == null) {
+            System.out.println(String.format("%s, startSeq data missing", socketSessionId));
+            return res;
+        }
+
+        PacketData q = socketMap.get(p.getReverseSocketId()).packetMap.get(p.ack);
+        while (p != null && q != null) {
+            //System.out.println(p.toLine());
+            res.add(p); //p.seq == 2264191123l
+            p = socketMap.get(p.getSocketId()).packetMap.get(nextSeq(p.seq + p.len));
+            while (p != null && q != null && q.ack <= p.seq) {
+                //System.out.println(q.toLine());
+                res.add(q);
+                q = socketMap.get(q.getSocketId()).packetMap.get(nextSeq(q.seq + q.len));
+            }
+        }
+        while (p != null) {
+            //System.out.println(p.toLine());
+            res.add(p);
+            p = socketMap.get(p.getSocketId()).packetMap.get(nextSeq(p.seq + p.len));
+        }
+        while (q != null) {
+            //System.out.println(q.toLine());
+            res.add(q);
+            q = socketMap.get(q.getSocketId()).packetMap.get(nextSeq(q.seq + q.len));
+        }
+
+        return res;
     }
 }
 
 public class Main {
 
-    private static long nextSeq(long seq) {
-        return seq % 0x100000000L;
-    }
-
     public static void main(String[] args) {
         //test1();
         //test2();
         //test3();
-        test4();
+        //test4();
+        test5();
     }
 
     private static void test1() {
@@ -160,14 +287,19 @@ public class Main {
         String poolIp = "203.107.46.175";
         int poolPort = 1800;
 
+        String filePattern = "miner\\.out(\\.\\d+)?";
         Long startSeq = Long.MAX_VALUE;
 
         Map<Long, PacketData> packetMap = new TreeMap<>();
 
-        File dir = new File("data/");
+        File dir = new File("/tmp/miner/");
         List<File> files = (List<File>) FileUtils.listFiles(dir, null, false);
         for (File file : files) {
             if (!file.isFile() || !file.getName().startsWith("miner.out")) {
+                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
+                continue;
+            }
+            if (!Pattern.matches(filePattern, file.getName())) {
                 System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
                 continue;
             }
@@ -247,6 +379,93 @@ public class Main {
         System.out.println(res.size());
     }
 
+
+    private static void test5() {
+
+        String dataDir = "/tmp/miner/";
+        String filePattern = "miner\\.out(\\.\\d+)?";
+        String outputDir = "data";
+
+        Map<String, SocketSessionData> sessionMap = new HashMap<>();
+
+        File dir = new File(dataDir);
+        List<File> files = (List<File>) FileUtils.listFiles(dir, null, false);
+        for (File file : files) {
+            if (!file.isFile() || !file.getName().startsWith("miner.out")) {
+                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
+                continue;
+            }
+            if (!Pattern.matches(filePattern, file.getName())) {
+                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
+                continue;
+            }
+            List<String> strings = null;
+            try {
+                System.out.println("try file=" + file.getName());
+                strings = FileUtils.readLines(file, "UTF-8");
+            } catch (IOException e) {
+                e.printStackTrace();
+                continue;
+            }
+
+            for (String line : strings) {
+                //System.out.println(line);
+                PacketData p = new PacketData(line);
+                String sessionId = p.getSocketSessionId();
+                if (!sessionMap.containsKey(sessionId)) {
+                    SocketSessionData session = SocketSessionData.createSocketSessionFromPacket(p);
+                    sessionMap.put(sessionId, session);
+                } else {
+                    String socketId = p.getSocketId();
+                    SocketSessionData session = sessionMap.get(sessionId);
+                    if (!session.socketMap.containsKey(socketId)) {
+                        System.out.println(String.format("socketId=%s, not exist", socketId));
+                        return;
+                    } else {
+                        SocketData socket = session.socketMap.get(socketId);
+                        if (socket.packetMap.containsKey(p.seq)) {
+                            System.out.println(String.format("%s seq=%d, duplicated", socketId, p.seq));
+                        }
+                        socket.packetMap.put(p.seq, p);
+                        if (p.seq < socket.startSeq) { //bug: req may recycle to 0
+                            socket.startSeq = p.seq;
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println(String.format("total %d socket sessions", sessionMap.size()));
+
+        for (String sessionId : sessionMap.keySet()) {
+
+            SocketSessionData session = sessionMap.get(sessionId);
+
+            System.out.println(String.format("session(%s), with %d socket flows", sessionId, session.socketMap.size()));
+
+            for (String socketId : session.socketMap.keySet()) {
+                SocketData socket = session.socketMap.get(socketId);
+                System.out.println(String.format("\tsocket(%s), total %d frames, startSeq=%d", socketId, socket.packetMap.size(), socket.startSeq));
+            }
+
+            String outputFileName = String.format("%s/parse_%s.res", outputDir, sessionId);
+            System.out.println("outputFileName=" + outputFileName);
+            File file = new File(outputFileName);
+            if (file.exists()) {
+                file.delete();
+            }
+
+            for (PacketData p : session.getPacketStream()) {
+                //System.out.println(p.toLine());
+                try {
+                    FileUtils.writeStringToFile(file, p.toLine() + "\n", "UTF-8", true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     private static void printSeq(Map<Long, PacketData> packetMap, long startSeq) {
         PacketData p = packetMap.get(startSeq);
         while (p != null) {
@@ -265,6 +484,10 @@ public class Main {
                 p = nextPacket;
             }
         }
+    }
+
+    private static long nextSeq(long seq) {
+        return seq % 0x100000000L;
     }
 
     private static void printSeq2(Map<Long, PacketData> packetMap, long startSeq, List<PacketData> res) {
