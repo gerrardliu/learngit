@@ -427,8 +427,13 @@ public class Main {
                             System.out.println(String.format("%s seq=%d, duplicated", socketId, p.seq));
                         }
                         socket.packetMap.put(p.seq, p);
-                        if (p.seq < socket.startSeq) { //bug: req may recycle to 0
-                            socket.startSeq = p.seq;
+
+                        //update startSeq
+                        if (p.seq < socket.startSeq) { //req may recycle to 0
+                            long diff = socket.startSeq - p.seq;
+                            if (diff < 0x80000000L || socket.startSeq == Long.MAX_VALUE) {
+                                socket.startSeq = p.seq;
+                            }
                         }
                     }
                 }
@@ -455,7 +460,9 @@ public class Main {
                 file.delete();
             }
 
-            for (PacketData p : session.getPacketStream()) {
+            List<PacketData> packetStream = session.getPacketStream();
+            System.out.println(String.format("total %d packets", packetStream.size()));
+            for (PacketData p : packetStream) {
                 //System.out.println(p.toLine());
                 try {
                     FileUtils.writeStringToFile(file, p.toLine() + "\n", "UTF-8", true);
