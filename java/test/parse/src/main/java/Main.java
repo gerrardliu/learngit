@@ -45,7 +45,7 @@ class PacketData {
         srcPort = Integer.valueOf(split[6]);
         dstIp = split[7];
         dstPort = Integer.valueOf(split[8]);
-        jsonPacket = new String(Base64.getDecoder().decode(split[9])).trim();
+        jsonPacket = new String(Base64.getDecoder().decode(split[9]));
         isProcessed = Integer.valueOf(split[10]);
     }
 
