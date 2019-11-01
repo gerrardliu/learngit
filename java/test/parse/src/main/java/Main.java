@@ -216,6 +216,7 @@ public class Main {
         //test3();
         //test4();
         test5();
+        //test6();
     }
 
     private static void test1() {
@@ -363,8 +364,12 @@ public class Main {
         //File file = new File("/tmp/miner/miner.out.20191025125759");
         //Long startSeq = 2957490728L;
         File file = new File("data/miner.out.20191025112659");
-        //Long startSeq = 2957344686L;
-        Long startSeq = 2264188133L;
+        Long startSeq = 2957344686L;
+        //Long startSeq = 2264188133L;
+        File outfile = new File("data/miner.out.20191025112659.order");
+        if (outfile.exists()) {
+            outfile.delete();
+        }
 
         List<String> strings = null;
         try {
@@ -386,7 +391,12 @@ public class Main {
         List<PacketData> res = new LinkedList<>();
         printSeq2(packetMap, startSeq, res);
         for (PacketData p : res) {
-            System.out.println(p.toLine());
+            //System.out.println(p.toLine());
+            try {
+                FileUtils.writeStringToFile(outfile, p.toLine() + "\n", "UTF-8", true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         System.out.println(res.size());
     }
@@ -481,6 +491,33 @@ public class Main {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    private static void test6() {
+        File file = new File("data/miner.out.20191025112659");
+        File outFile = new File("data/miner.out.20191025112659.parse");
+        if (outFile.exists()) {
+            outFile.delete();
+        }
+
+        List<String> strings = null;
+        try {
+            strings = FileUtils.readLines(file, "UTF-8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        for (String line : strings) {
+            //System.out.println(line);
+            PacketData p = new PacketData(line);
+            //System.out.println(p.toLine());
+            try {
+                FileUtils.writeStringToFile(outFile, p.toLine() + "\n", "UTF-8", true);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
