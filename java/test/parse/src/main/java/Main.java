@@ -219,144 +219,144 @@ public class Main {
         //test6();
     }
 
-    private static void test1() {
-        File file = new File("/tmp/miner/miner.out.20191021172011");
-        List<String> strings = null;
-        try {
-            strings = FileUtils.readLines(file, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//    private static void test1() {
+//        File file = new File("/tmp/miner/miner.out.20191021172011");
+//        List<String> strings = null;
+//        try {
+//            strings = FileUtils.readLines(file, "UTF-8");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Map<Long, PacketData> map = new TreeMap<>();
+//        Map<Long, List<Long>> rmap = new HashMap<>();
+//
+//        for (String line : strings) {
+//            //System.out.println(line);
+//            PacketData p = new PacketData(line);
+//
+//            map.put(p.seq, p);
+//            if (!rmap.containsKey(p.ack)) {
+//                List<Long> a = new ArrayList<>();
+//                a.add(p.seq);
+//                rmap.put(p.ack, a);
+//            } else {
+//                rmap.get(p.ack).add(p.seq);
+//            }
+//        }
+//
+//        long seq = 3865699372l;
+//        PacketData p = map.get(seq);
+//        while (p != null) {
+//            List<Long> rList = rmap.get(p.ack);
+//            Collections.sort(rList);
+//            for (Long i : rList) {
+//                PacketData pi = map.get(i);
+//                if (pi != null) {
+//                    System.out.println(pi.toLine());
+//                }
+//            }
+//            p = map.get(p.ack);
+//        }
+//    }
 
-        Map<Long, PacketData> map = new TreeMap<>();
-        Map<Long, List<Long>> rmap = new HashMap<>();
+//    private static void test2() {
+//        //File file = new File("/tmp/miner/miner.out.20191021172011");
+//        File file = new File("/tmp/miner/miner.out.20191025112659");
+//        List<String> strings = null;
+//        try {
+//            strings = FileUtils.readLines(file, "UTF-8");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Map<Long, PacketData> map = new TreeMap<>();
+//
+//
+//        for (String line : strings) {
+//            //System.out.println(line);
+//            PacketData p = new PacketData(line);
+//            long key = p.seq + p.ack;
+//            if (map.containsKey(key)) {
+//                System.out.println("dup key=" + p.seq);
+//            }
+//            map.put(key, p);
+//        }
+//
+//        int i = 0;
+//        for (Long seq : map.keySet()) {
+//            PacketData p = map.get(seq);
+//            System.out.println(p.counter);
+//            i++;
+//        }
+//        System.out.println(i);
+//
+//    }
 
-        for (String line : strings) {
-            //System.out.println(line);
-            PacketData p = new PacketData(line);
-
-            map.put(p.seq, p);
-            if (!rmap.containsKey(p.ack)) {
-                List<Long> a = new ArrayList<>();
-                a.add(p.seq);
-                rmap.put(p.ack, a);
-            } else {
-                rmap.get(p.ack).add(p.seq);
-            }
-        }
-
-        long seq = 3865699372l;
-        PacketData p = map.get(seq);
-        while (p != null) {
-            List<Long> rList = rmap.get(p.ack);
-            Collections.sort(rList);
-            for (Long i : rList) {
-                PacketData pi = map.get(i);
-                if (pi != null) {
-                    System.out.println(pi.toLine());
-                }
-            }
-            p = map.get(p.ack);
-        }
-    }
-
-    private static void test2() {
-        //File file = new File("/tmp/miner/miner.out.20191021172011");
-        File file = new File("/tmp/miner/miner.out.20191025112659");
-        List<String> strings = null;
-        try {
-            strings = FileUtils.readLines(file, "UTF-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Map<Long, PacketData> map = new TreeMap<>();
-
-
-        for (String line : strings) {
-            //System.out.println(line);
-            PacketData p = new PacketData(line);
-            long key = p.seq + p.ack;
-            if (map.containsKey(key)) {
-                System.out.println("dup key=" + p.seq);
-            }
-            map.put(key, p);
-        }
-
-        int i = 0;
-        for (Long seq : map.keySet()) {
-            PacketData p = map.get(seq);
-            System.out.println(p.counter);
-            i++;
-        }
-        System.out.println(i);
-
-    }
-
-    private static void test3() {
-
-        String minerIp = "10.30.9.22";
-        int minerPort = 35346;
-        String poolIp = "203.107.46.175";
-        int poolPort = 1800;
-
-        String filePattern = "miner\\.out(\\.\\d+)?";
-        Long startSeq = Long.MAX_VALUE;
-
-        Map<Long, PacketData> packetMap = new TreeMap<>();
-
-        File dir = new File("/tmp/miner/");
-        List<File> files = (List<File>) FileUtils.listFiles(dir, null, false);
-        for (File file : files) {
-            if (!file.isFile() || !file.getName().startsWith("miner.out")) {
-                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
-                continue;
-            }
-            if (!Pattern.matches(filePattern, file.getName())) {
-                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
-                continue;
-            }
-            List<String> strings = null;
-            try {
-                System.out.println("try file=" + file.getName());
-                strings = FileUtils.readLines(file, "UTF-8");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            for (String line : strings) {
-                //System.out.println(line);
-                PacketData p = new PacketData(line);
-                if ((p.srcIp.equals(minerIp) && p.srcPort == minerPort && p.dstIp.equals(poolIp) && p.dstPort == poolPort) ||
-                        (p.srcIp.equals(poolIp) && p.srcPort == poolPort && p.dstIp.equals(minerIp) && p.dstPort == minerPort)) {
-                    if (packetMap.containsKey(p.seq)) {
-                        System.out.println("seq=" + p.seq + ",already exists");
-                    }
-                    packetMap.put(p.seq, p);
-                    if (p.seq < startSeq) {
-                        startSeq = p.seq;
-                    }
-                }
-            }
-        }
-
-        System.out.println("startSeq = " + startSeq);
-        File file = new File(String.format("data/parse_%s_%d_to_%s_%d.res", minerIp, minerPort, poolIp, poolPort));
-        if (file.exists()) {
-            file.delete();
-        }
-        List<PacketData> res = new LinkedList<>();
-        printSeq2(packetMap, startSeq, res);
-        for (PacketData p : res) {
-            //System.out.println(p.toLine());
-            try {
-                FileUtils.writeStringToFile(file, p.toLine() + "\n", "UTF-8", true);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        System.out.println(res.size());
-    }
+//    private static void test3() {
+//
+//        String minerIp = "10.30.9.22";
+//        int minerPort = 35346;
+//        String poolIp = "203.107.46.175";
+//        int poolPort = 1800;
+//
+//        String filePattern = "miner\\.out(\\.\\d+)?";
+//        Long startSeq = Long.MAX_VALUE;
+//
+//        Map<Long, PacketData> packetMap = new TreeMap<>();
+//
+//        File dir = new File("/tmp/miner/");
+//        List<File> files = (List<File>) FileUtils.listFiles(dir, null, false);
+//        for (File file : files) {
+//            if (!file.isFile() || !file.getName().startsWith("miner.out")) {
+//                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
+//                continue;
+//            }
+//            if (!Pattern.matches(filePattern, file.getName())) {
+//                System.out.println(String.format("skip filename=%s, not miner data", file.getName()));
+//                continue;
+//            }
+//            List<String> strings = null;
+//            try {
+//                System.out.println("try file=" + file.getName());
+//                strings = FileUtils.readLines(file, "UTF-8");
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//
+//            for (String line : strings) {
+//                //System.out.println(line);
+//                PacketData p = new PacketData(line);
+//                if ((p.srcIp.equals(minerIp) && p.srcPort == minerPort && p.dstIp.equals(poolIp) && p.dstPort == poolPort) ||
+//                        (p.srcIp.equals(poolIp) && p.srcPort == poolPort && p.dstIp.equals(minerIp) && p.dstPort == minerPort)) {
+//                    if (packetMap.containsKey(p.seq)) {
+//                        System.out.println("seq=" + p.seq + ",already exists");
+//                    }
+//                    packetMap.put(p.seq, p);
+//                    if (p.seq < startSeq) {
+//                        startSeq = p.seq;
+//                    }
+//                }
+//            }
+//        }
+//
+//        System.out.println("startSeq = " + startSeq);
+//        File file = new File(String.format("data/parse_%s_%d_to_%s_%d.res", minerIp, minerPort, poolIp, poolPort));
+//        if (file.exists()) {
+//            file.delete();
+//        }
+//        List<PacketData> res = new LinkedList<>();
+//        printSeq2(packetMap, startSeq, res);
+//        for (PacketData p : res) {
+//            //System.out.println(p.toLine());
+//            try {
+//                FileUtils.writeStringToFile(file, p.toLine() + "\n", "UTF-8", true);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        System.out.println(res.size());
+//    }
 
     //vim miner.out.20191025125759
     private static void test4() {
@@ -522,25 +522,25 @@ public class Main {
         }
     }
 
-    private static void printSeq(Map<Long, PacketData> packetMap, long startSeq) {
-        PacketData p = packetMap.get(startSeq);
-        while (p != null) {
-            System.out.println(p.toLine());
-
-            Long nextSeq = p.seq + p.len;
-            PacketData nextPacket = packetMap.get(nextSeq);
-            if (nextPacket == null) {
-                System.out.println("data missing, seq=" + nextSeq);
-                break;
-            }
-
-            if (p.ack != nextPacket.ack) {
-                p = packetMap.get(p.ack);
-            } else {
-                p = nextPacket;
-            }
-        }
-    }
+//    private static void printSeq(Map<Long, PacketData> packetMap, long startSeq) {
+//        PacketData p = packetMap.get(startSeq);
+//        while (p != null) {
+//            System.out.println(p.toLine());
+//
+//            Long nextSeq = p.seq + p.len;
+//            PacketData nextPacket = packetMap.get(nextSeq);
+//            if (nextPacket == null) {
+//                System.out.println("data missing, seq=" + nextSeq);
+//                break;
+//            }
+//
+//            if (p.ack != nextPacket.ack) {
+//                p = packetMap.get(p.ack);
+//            } else {
+//                p = nextPacket;
+//            }
+//        }
+//    }
 
     private static long nextSeq(long seq) {
         return seq % 0x100000000L;
