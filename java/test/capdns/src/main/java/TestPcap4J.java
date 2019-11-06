@@ -47,7 +47,7 @@ public class TestPcap4J {
                 counter++;
 
                 System.out.println("\n" + handle.getTimestamp());
-                //System.out.println(packet);
+                System.out.println(packet);
 
                 //System.out.println("ether packet captured");
                 EthernetPacket ethernetPacket = packet.get(EthernetPacket.class);
@@ -109,14 +109,14 @@ public class TestPcap4J {
 
                 List<DnsQuestion> questions = dnsHeader.getQuestions();
                 for (DnsQuestion question : questions) {
-                    System.out.println("domain=" + question.getQName());
+                    System.out.println("name=" + question.getQName());
                 }
 
                 List<DnsResourceRecord> answers = dnsHeader.getAnswers();
-                for (DnsResourceRecord anwser : answers) {
+                for (DnsResourceRecord answer : answers) {
                     //System.out.println(anwser.getDataType());
-                    if (anwser.getDataType() == DnsResourceRecordType.A) {
-                        DnsResourceRecord.DnsRData rData = anwser.getRData();
+                    if (answer.getDataType() == DnsResourceRecordType.A) {
+                        DnsResourceRecord.DnsRData rData = answer.getRData();
                         //System.out.println("rdata.len=" + rData.length());
                         if (rData.length() == 4) {
                             InetAddress address = null;
@@ -125,8 +125,12 @@ public class TestPcap4J {
                             } catch (UnknownHostException e) {
                                 e.printStackTrace();
                             }
-                            System.out.println(address.getHostAddress());
+                            System.out.println("A=" + address.getHostAddress());
                         }
+                    } else if (answer.getDataType() == DnsResourceRecordType.CNAME) {
+                        System.out.println("cname=" + new String(answer.getRData().getRawData()));
+                    } else {
+                        System.out.println("answer type=" + answer.getDataType());
                     }
                 }
             }
