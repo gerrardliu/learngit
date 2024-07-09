@@ -129,3 +129,20 @@ cephadm install ceph-common
 ##after ceph2 finish
 scp /etc/ceph/ceph.conf root@ceph2:/etc/ceph
 scp /etc/ceph/ceph.client.admin.keyring root@ceph2:/etc/ceph
+
+#pool
+##create pool
+ceph osd pool create pool1 32 32
+##list pool
+ceph osd lspools
+ceph osd pool ls detail
+ceph osd pool stats pool1
+##check pool configuration
+ceph osd pool get pool1 all
+ceph osd pool set pool1 size 2
+##set pool application
+ceph osd pool application enable pool1 rbd
+##rename pool
+ceph osd pool rename pool1 pool2
+##set quota
+ceph osd pool set-quota pool1 max-objects/max-bytes(1000/10240)
