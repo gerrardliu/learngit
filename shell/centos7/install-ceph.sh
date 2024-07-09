@@ -116,3 +116,13 @@ yum -y install s3cmd
 s3cmd put --acl-public file.txt s3://bucket1/
 #set acl public
 s3cmd setacl s3://bucket1/VMwareTools-10.3.23-16594550.tar.gz --acl-public --recursive
+
+#install cephadm in every node
+scp cephadm root@ceph2:/root
+##in ceph2
+./cephadm add-repo --release octopus
+./cephadm install
+cephadm install ceph-common
+##after ceph2 finish
+scp /etc/ceph/ceph.conf root@ceph2:/etc/ceph
+scp /etc/ceph/ceph.client.admin.keyring root@ceph2:/etc/ceph
