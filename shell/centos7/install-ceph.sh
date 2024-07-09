@@ -95,10 +95,24 @@ radosgw-admin zonegroup create --rgw-zonegroup=zonegroup1 --master --default
 radosgw-admin zone create --rgw-zonegroup=zonegroup1 --rgw-zone=zone1 --master --default
 ceph orch apply rgw realm1 zone1 --placement="3 ceph1 ceph2 ceph3"
 
-#enable rgw object getate functions in dashboard
+#check logs
+ceph orch ps --daemon-type rgw
+cephadm logs -n rgw.realm1.zone1.ceph1.mklbhf
+
+#create rgw user
 radosgw-admin user create --uid=dashboard --display-name=dashboard --system
 radosgw-admin user info --uid=dashboard | grep secret_key
+
+#enable rgw object getate functions in dashboard
 echo PXU8AUKZA6P4UCFL3W1V >  /root/rgw-dashboard-access-key
 echo llwxd5oumcNZT3B0eObXBYXMiZsIuhtJRiYUcO4X > /root/rgw-dashboard-secret-key
 ceph dashboard set-rgw-api-access-key -i /root/rgw-dashboard-access-key
 ceph dashboard set-rgw-api-secret-key -i /root/rgw-dashboard-secret-key
+
+#install s3cmd
+yum -y install epel-release
+yum -y install s3cmd
+#put file, with public acl, http://192.168.78.11/bucket1/file.txt
+s3cmd put --acl-public file.txt s3://bucket1/
+#set acl public
+s3cmd setacl s3://bucket1/VMwareTools-10.3.23-16594550.tar.gz --acl-public --recursive
