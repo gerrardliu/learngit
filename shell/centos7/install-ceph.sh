@@ -121,6 +121,9 @@ s3cmd setacl s3://bucket1/VMwareTools-10.3.23-16594550.tar.gz --acl-public --rec
 scp cephadm root@ceph2:/root
 ##in ceph2
 ./cephadm add-repo --release octopus
+##replace aliyun source
+##vi /etc/yum.repo.d/ceph.repo
+##%s/download.ceph.com/mirrors.aliyun.com\/ceph/g
 ./cephadm install
 cephadm install ceph-common
 ##after ceph2 finish
