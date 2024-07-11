@@ -40,7 +40,7 @@ scp hosts root@192.168.78.13:/etc/
 timedatectl set-timezone Asia/Shanghai
 timedatectl status
 yum install -y ntpdate
-ntpdate -u ntp1.aliyun.com
+ntpdate -u time1.aliyun.com
 
 #install docker
 yum install -y yum-utils
@@ -136,6 +136,7 @@ ceph osd pool create pool1 32 32
 ##list pool
 ceph osd lspools
 ceph osd pool ls detail
+##check pool stats
 ceph osd pool stats pool1
 ##check pool configuration
 ceph osd pool get pool1 all
@@ -146,3 +147,93 @@ ceph osd pool application enable pool1 rbd
 ceph osd pool rename pool1 pool2
 ##set quota
 ceph osd pool set-quota pool1 max-objects/max-bytes(1000/10240)
+##delete pool
+ceph osd pool delete pool1 pool1 --yes-i-really-really-mean-it
+
+#pg
+##check pg in a pool
+ceph pg ls-by-pool pool1
+
+#crash
+##to solve '1 daemons have recently crashed'
+ceph crash ls
+ceph crash archive <CRASH ID>2024-07-09T09:13:54.619693Z_0736a026-2912-45e5-8d54-2d3017b82e90
+
+#config
+##to see global configs
+ceph config dump
+##allow mon to delete pool
+ceph config get mon mon_allow_pool_delete
+ceph config set mon mon_allow_pool_delete true
+
+#osd
+##osd list
+ceph osd status
+##osd summary
+ceph osd stat
+##relation between host, disk, osd
+ceph osd tree
+
+#mon
+##epoch, mon list, address:port, leader
+ceph mon stat
+
+#auth
+##list all users
+ceph auth list
+##create a user
+ceph auth get-or-create client.user1 | tee /etc/ceph/ceph.client.user1.keyring
+##get a user info
+ceph auth get client.user1
+##use user do something
+ceph -s --id user1
+##give r privilege
+ceph auth caps client.user1 mon 'allow r'
+
+#rados
+rados -p pool1 ls
+rados -p pool1 put 1/rbdmap rbdmap
+rados -p pool1 rm 1/rbdmap
+
+#rbd
+##create a pool for rbd
+ceph osd pool create pool1 16 16
+#init pool application to rbd, equals to `ceph osd pool application enable pool1 rbd`
+rbd pool init pool1
+##create image
+rbd create pool1/image1 --size=2G
+##get image info
+rbd info pool1/image1
+##list images in a pool
+rbd ls -p pool1
+##create a user for rbd
+ceph auth get-or-create client.rbd.user1 mon 'profile rbd' osd 'profile rbd pool=pool1' | tee /etc/ceph/ceph.client.rbd.user1.keyring
+
+#use rbd image in client machine
+##first install ceph-common
+yum install -y python3
+yum install -y yum-utils
+yum install -y ceph-common
+##then copy /etc/ceph/ceph.conf and /etc/ceph/ceph.client.rbd.user1.keyring to /etc/ceph/ on client machine
+##rbd map, report error 'RBD image feature set mismatch. You can disable features unsupported by the kernel with "rbd feature disable pool1/image1 object-map fast-diff deep-flatten".'
+rbd map pool1/image1 --id=rbd.user1
+##disable some features
+rbd feature disable pool1/image1 object-map
+rbd feature disable pool1/image1 exclusive-lock
+rbd feature disable pool1/image1 deep-flatten
+##try again, and got output '/dev/rbd0'
+rbd map pool1/image1 --id=rbd.user1
+##format disk
+mkfs -t xfs /dev/rbd0
+##for auto map, vi /etc/ceph/rbdmap, add line 'pool1/image1    id=rbd.user1,keyring=/etc/ceph/ceph.client.rbd.user1.keyring'
+vi /etc/ceph/rbdmap
+##enable rbdmap daemon
+systemctl start rbdmap.service
+systemctl enable rbdmap.service
+##create mount dir
+mkdir /mnt/rbd0
+##mount mannually
+mount /dev/rbd0 /mnt/rbd0
+##to know uuid, use blkid
+blkid
+##for auto mount, vi /etc/fstab, add line 'UUID=90acd48b-5cfd-4bca-a39d-bf6184042825 /mnt/rbd0 xfs defaults,_netdev 0 0'
