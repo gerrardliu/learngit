@@ -206,11 +206,17 @@ rbd create pool1/image1 --size=2G
 rbd info pool1/image1
 ##list images in a pool
 rbd ls -p pool1
-##create a user for rbd
-ceph auth get-or-create client.rbd.user1 mon 'profile rbd' osd 'profile rbd pool=pool1' | tee /etc/ceph/ceph.client.rbd.user1.keyring
+##check size of image
+rbd du pool1/image1
+##resize image to 5G, dev size 5G, but df size in client after mount is still 2G
+rbd resize pool1/image1 --size=5G
+##resize image to lower size
+rbd resize pool1/image1 --size=2G --allow-shrink
 
 #use rbd image in client machine
-##first install ceph-common
+##create a user for rbd
+ceph auth get-or-create client.rbd.user1 mon 'profile rbd' osd 'profile rbd pool=pool1' | tee /etc/ceph/ceph.client.rbd.user1.keyring
+##install ceph-common in client machine
 yum install -y python3
 yum install -y yum-utils
 yum install -y ceph-common
@@ -237,3 +243,25 @@ mount /dev/rbd0 /mnt/rbd0
 ##to know uuid, use blkid
 blkid
 ##for auto mount, vi /etc/fstab, add line 'UUID=90acd48b-5cfd-4bca-a39d-bf6184042825 /mnt/rbd0 xfs defaults,_netdev 0 0'
+
+
+#mds
+##create pool for mds
+ceph osd pool create cephfs_data
+ceph osd pool create cephfs_metadata
+##create fs
+ceph fs new cephfs cephfs_metadata cephfs_data
+##start mds
+ceph orch apply mds cephfs --placement "3 ceph1 ceph2 ceph3"
+##check mds status
+ceph orch ps --daemon-type mds
+
+#to use mds on client
+##make dir for mount
+mkdir /mnt/cephfs
+##copy user keyring to /etc/ceph, for example 'ceph.client.admin.keyring'
+##mount manually
+mount -t ceph 192.168.78.11:/ /mnt/cephfs -o name=admin
+##for auto mount
+##vi /etc/fstab, add line '192.168.78.11:/ /mnt/cephfs ceph defaults,name=admin,_netdev 0 0'
+mount -a
